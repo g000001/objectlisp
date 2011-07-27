@@ -1,0 +1,103 @@
+;;; -*- Mode:LISP;  Package: USER; Base:10; Readtable:CL; Syntax: Common-Lisp -*-
+;;;
+;;; ******************************************************************************
+;;; Copyright (c) 1984, 1985 Gary L. Drescher.  All rights reserved.
+;;; Licensed to and distributed by Lisp Machine, Inc.
+;;;
+;;; Use and copying of this software and preparation of derivative works based
+;;; upon this software are permitted.  Any distribution of this software or
+;;; derivative works must comply with all applicable United States export control
+;;; laws.
+;;;
+;;; This software is made available AS IS, and no warranty is made about the
+;;; software, its performance, or its conformity to any specification.
+;;; 
+;;; Any person obtaining a copy of this software is requested to send her name
+;;; and post office or electronic mail address to:
+;;;   ObjectLISP Coordinator
+;;;   c/o User Interface Group
+;;;   Lisp Machine, Inc.
+;;;   1000 Massachusetts Ave.
+;;;   Cambridge, Ma 02138
+;;;
+;;; Suggestions, comments, and requests for improvements are also welcome.
+;;; ******************************************************************************
+
+#+(or lambda symbolics)
+(fs:set-logical-pathname-host
+  "OBJECTLISP"
+  :physical-host
+  (let ((host (send fs:fdefine-file-pathname ':host)))
+    (if (typep host 'fs:logical-host)
+	(send host ':host)
+      host))
+  :translations
+  '(("SOURCE" "ObjectLISP;")
+    ("PATCH" "ObjectLISP.PATCHES;")
+    )
+  )
+
+#+symbolics (deff find-package #'cl:find-package)
+
+(unless (find-package 'tim)
+  (make-package 'tim
+		:use '(#+lambda global
+		       #+symbolics common-lisp-global
+		       #-(or lambda symbolics) lisp)))
+
+(unless (find-package 'obj)
+  (make-package 'obj
+		:use '(#+lambda global
+		       #+symbolics common-lisp-global
+		       #-(or lambda symbolics) lisp
+		       tim)))
+
+(use-package 'obj #-symbolics (find-package 'user) #+symbolics 'user)
+#+symbolics (use-package 'obj 'cl-user)
+
+(unless (find-package 'obf) (make-package 'obf :use nil))
+
+#+(or lambda symbolics)
+(defsystem objectlisp
+  (:name "Object Lisp")
+  (:package obj)
+  (:pathname-default "objectlisp:source;")
+  (:patchable "objectlisp:patch;")
+  (:module preface "preface")
+  (:module nloop "nloop")
+  (:module table "table")
+  (:module obwalk "obwalk")
+  (:module walk "walk")
+  (:module main "obj")
+  (:module prims  "prims")
+  (:module global "global")
+  (:compile-load preface)
+  (:compile-load nloop (:fasload preface) (:fasload preface))
+  (:compile-load table (:fasload nloop preface) (:fasload nloop preface))
+  (:compile-load obwalk (:fasload nloop preface table) (:fasload nloop preface table))
+  (:compile-load walk (:fasload nloop preface table) (:fasload nloop preface table))
+  (:compile-load main (:fasload nloop preface table obwalk walk)
+		      (:fasload nloop preface table obwalk walk))
+  (:compile-load prims (:fasload nloop preface table obwalk walk main)
+		       (:fasload nloop preface table obwalk walk main))
+  (:compile-load global (:fasload nloop preface table obwalk walk main)
+		        (:fasload nloop preface table obwalk walk main)))
+
+#+(or lambda symbolics)
+(defun load-objectlisp (&rest keys)
+ (#-symbolics apply #+symbolics lexpr-funcall
+  #'make-system 'objectlisp :compile :noconfirm keys))
+
+(defvar *objectlisp-files
+	'("preface" "nloop" "table" "obwalk" "walk" "obj" "prims" "global"))
+
+#-(or lambda symbolics)
+(defun compile-load-objectlisp ()
+  (flet ((compile-load (file)
+	   (compile-file file)
+	   (load file)))
+    (mapc #'compile-load *objectlisp-files)))
+
+#-(or lambda symbolics)
+(defun load-objectlisp ()
+  (mapc #'load *objectlisp-files))

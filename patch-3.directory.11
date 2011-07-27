@@ -1,0 +1,13 @@
+;;; -*- Mode:LISP; Package:USER; Base:10; Readtable:Common-Lisp; Patch-File:T -*-
+;;; Patch directory for Object Lisp version 3
+;;; Written 26-Apr-86 12:10:17 by GLD (Gary L. Drescher) at site LMI Cambridge
+;;; while running on Larry from band 4
+;;; with Experimental System 110.228, Experimental Lambda-Diag 7.13, Experimental Local-File 68.7, Experimental FILE-Server 18.4, Experimental Unix-Interface 9.1, Experimental ZMail 65.14, Experimental Object Lisp 3.3, Experimental Tape 6.38, Experimental Site Data Editor 3.3, Experimental Tiger 24.0, Experimental KERMIT 31.3, Experimental Window-Maker 1.1, Experimental Gateway 4.8, Experimental TCP-Kernel 39.7, Experimental TCP-User 62.7, Experimental TCP-Server 45.5, Experimental MEDIUM-RESOLUTION-COLOR 3.4, Experimental MICRO-COMPILATION-TOOLS 3.2, microcode 1508, SDU ROM 103, pace's band, patched to 110.228.
+
+(:EXPERIMENTAL
+ ((0 "Object Lisp Loaded" "dg" NIL)
+  (1 "Enables the Code Walker for Symbolics machines - mpg " "MPG" NIL)
+  (2 "Codewalker bugs fixed." "EFH" NIL)
+  (3 "Inhibit undeclared-specials warning during codewalk in obj-listener-loop." "GLD" NIL)
+  (4 "Fixes bug with SPECIALIZATIONS of global object." "GLD" NIL)
+  ))

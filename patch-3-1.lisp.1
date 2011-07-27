@@ -1,0 +1,18 @@
+;;; -*- Mode:Lisp; Readtable:CL; Package:OBJ; Base:10; Patch-File:T -*-
+;;; Patch file for Object Lisp version 3.1
+;;; Reason:
+;;;  Enables the Code Walker for Symbolics machines - mpg 
+;;; Written 2-Apr-86 08:35:22 by MPG at site LMI Cambridge
+;;; while running on Larry from band 3
+;;; with Experimental System 110.161, Experimental Lambda-Diag 7.3, Experimental Local-File 68.2, Experimental FILE-Server 18.2, Experimental Unix-Interface 9.0, Experimental ZMail 65.7, Experimental Object Lisp 3.0, Experimental Tape 6.6, Experimental Site Data Editor 3.1, Experimental Tiger 24.0, Experimental KERMIT 31.2, Experimental Window-Maker 1.0, Experimental Gateway 4.0, Experimental TCP-Kernel 39.5, Experimental TCP-User 62.5, Experimental TCP-Server 45.5, Experimental MEDIUM-RESOLUTION-COLOR 3.0, Experimental MICRO-COMPILATION-TOOLS 3.0, microcode 1454, SDU ROM 103, Alpha III Andover.
+
+
+
+; From modified file DJ: L.OBJECTLISP; PREFACE.LISP#49 at 2-Apr-86 08:35:23
+#10R OBJ#:
+(COMPILER-LET ((*PACKAGE* (PKG-FIND-PACKAGE "OBJ")))
+  (COMPILER::PATCH-SOURCE-FILE "SYS: OBJECTLISP; PREFACE  "
+
+(defparameter *walkover? (not *links-in-cells?))
+
+))

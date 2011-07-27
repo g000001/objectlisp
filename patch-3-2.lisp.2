@@ -1,0 +1,152 @@
+;;; -*- Mode:Lisp; Readtable:CL; Package:OBJ; Base:10; Patch-File:T -*-
+;;; Patch file for Object Lisp version 3.2
+;;; Reason:
+;;;  Codewalker bugs fixed.
+;;; Written 10-Apr-86 13:17:13 by EFH at site LMI Cambridge
+;;; while running on Flashman from band 4
+;;; with Experimental System 110.187, Experimental Lambda-Diag 7.3, Experimental Local-File 68.5, Experimental FILE-Server 18.2, Experimental Unix-Interface 9.1, Experimental ZMail 65.11, Experimental Object Lisp 3.1, Experimental Tape 6.30, Experimental Site Data Editor 3.2, Experimental Tiger 24.0, Experimental KERMIT 31.2, Experimental Window-Maker 1.0, Experimental Gateway 4.5, Experimental TCP-Kernel 39.5, Experimental TCP-User 62.6, Experimental TCP-Server 45.5, Experimental MEDIUM-RESOLUTION-COLOR 3.1, Experimental MICRO-COMPILATION-TOOLS 3.2, microcode 1408, SDU ROM 8, Alpha III Andover patched '86.4.3.
+
+
+;; *** Note: ***
+;;   You may lose because the buffer has no readtable attribute.
+;; *************
+
+; From file CHOP: GLD.NOBL; PATCHES.LISP#2 at 10-Apr-86 13:17:34
+#10R OBJ#:
+(COMPILER-LET ((*PACKAGE* (PKG-FIND-PACKAGE "OBJ")))
+  (COMPILER::PATCH-SOURCE-FILE "CHOP: GLD.NOBL; PATCHES.#"
+
+;;; -*- Mode:LISP; Package:OBJ; ;Readtable: CL; Base:10 -*-
+
+;obwalk.lisp
+
+(DEFPARAMETER OBF-PKG (PKG-FIND-PACKAGE 'OBF))
+
+; FCNCALL? is nonnull iff the application was a normal (<fcn-form> . <args>),
+;  rather than a (FUNCALL/APPLY/etc <fcn-form> ...).
+; 1st return value is null iff FCN-FORM might possibly yield a shadowable 
+;  symbol at runtime.
+; 2nd return value is the SYM to be FSYMEVAL'ed, if this can be determined now.
+;  This is for use by the lambda/symbolics compiler-interceptor.
+(defun unshadowable-aux (fcn-form fcncall? &aux sym)
+  (values (or ;; Nonsymbol in fcncall's function position:
+	      (and fcncall? (not (symbolp fcn-form)))
+	      ;; Obl-interceptor, eg (FUNCALL (GET-SYM-FCN 'FOO) ...):
+	      (and (consp fcn-form) (symbolp (car fcn-form))
+		   (OR (eq (symbol-package (car fcn-form)) obj-pkg)
+		       (EQ (SYMBOL-PACKAGE (CAR FCN-FORM)) OBF-PKG)))
+	      ;; Constant lambda expression:
+	      (and (consp fcn-form)
+		   (or (eq (car fcn-form) 'lambda)
+		       (and (memq (car fcn-form) '(function quote))
+			    (consp (cadr fcn-form))
+			    (eq (car (cadr fcn-form)) 'lambda))))
+	      ;; Constant-symbol, unshadowable:
+	      (progn
+	       (cond (fcncall?
+		      (setq sym fcn-form))
+		     ((quoted-symbol? fcn-form)
+		      (setq sym (cadr fcn-form))))
+	       (and (not (null sym))
+		    (pkg-unshadowable? sym))))
+	  sym))
+
+;walk.lisp
+
+(defun free-fcn-ref? (sym args)
+  (and (not (null sym))
+       (not (memq sym *bound-fcns))
+       ;; Not a funcall/apply/call of a lexically bound fcn-name:
+       (not (and (memq sym '(funcall apply call))
+		 (CONSP (CAR ARGS))
+		 (MEMQ (CAR (CAR ARGS)) '(QUOTE FUNCTION))
+		 (NOT (FREE-FCN-REF? (CADR (CAR ARGS)) (CDR ARGS)))))))
+
+;obj.lisp
+
+(defmacro ASK (obj-form &body body)
+  (if *walkover?
+      `(ask-aux ,obj-form ,@(if *obl-walking?
+				body
+			        (walkover ;(if (null (cdr body))
+					  ;    body
+				  `((progn ,@body)))));)
+      `(obl (ask-aux ,obj-form ,@body))))
+
+;(DEFOBFUN <fcn-sym> ...) or (DEFOBFUN (<fcn-sym> <obj-form>) ...)
+;Note that DEFOBFUN >always< compiles the definition if *WALKOVER? is null.
+(defmacro DEFOBFUN (fcn-sym vars &body body
+		    &aux obj-sym shadowed-sym internal-sym lets)
+  (setq internal-sym fcn-sym)
+  (multiple-value-setq (vars lets) (hack-keyword-default-pkg vars))
+  (unless (null lets) (setq body `((let* ,lets ,@body))))
+  (when (consp fcn-sym)
+    (setq obj-sym (second fcn-sym)
+	  fcn-sym (first fcn-sym)
+	  internal-sym (pkg-new-symbol (find-package 'obf)
+				       "(" fcn-sym " " obj-sym ")")))
+  (setq shadowed-sym (new-symbol "SHADOWED-" fcn-sym))
+  (if *walkover?
+      (let ((*defobfun-fcn-sym fcn-sym)
+	    (*shadowed-fcn-sym shadowed-sym)
+	    (*inside-defobfun t) (*defobfun-obj-sym obj-sym)
+	    *val-ref-syms *val-set-syms *fcn-ref-syms)
+	`(progn 'compile
+	    (record-source-file-name ',fcn-sym 'defobfun t)
+	    ,(if (or (tree-memq shadowed-sym vars)
+		     (tree-memq shadowed-sym body))
+		 (if (application-in-arglist? vars)
+;		     #-lambda
+		     `(defun ,internal-sym (&rest args
+					    &aux (shadows ,(shadows-form)))
+			,@(dcl-fcn-parent-form fcn-sym internal-sym)
+			(apply #',(walkover `(lambda (shadows ,@vars) ,@body))
+			       shadows args))
+;		     #+lambda
+;		     `(defun ,internal-sym (&rest args
+;					    &aux (shadows ,(shadows-form)))
+;			args
+;			,@(dcl-fcn-parent-form fcn-sym internal-sym)
+;			,(walkover `(destructuring-bind ,vars args ,@body)))
+		     (walkover `(defun ,internal-sym ,vars
+				  ,@(dcl-fcn-parent-form fcn-sym internal-sym)
+				  (let ((shadows ,(shadows-form)))
+				    ,@body))))
+		 (walkover `(defun ,internal-sym ,vars
+			      ,@(dcl-fcn-parent-form fcn-sym internal-sym)
+			      ,@body)))
+	    (defobfun-install ,obj-sym ',fcn-sym ',shadowed-sym #',internal-sym
+			      ',*val-ref-syms ',*val-set-syms ',*fcn-ref-syms)))
+      `(compiler-let ((*defobfun-fcn-sym fcn-sym)
+		      (*shadowed-fcn-sym ',shadowed-sym)
+		      (*inside-defobfun t) (*defobfun-obj-sym obj-sym)
+		      (*val-ref-syms nil) (*val-set-syms nil) (*fcn-ref-syms nil))
+	 (progn 'compile
+	    (record-source-file-name ',fcn-sym 'defobfun t)
+	    ,(if (or (tree-memq shadowed-sym vars)
+		     (tree-memq shadowed-sym body))
+		 (if (application-in-arglist? vars)
+		     #-lambda
+		     `(defun ,internal-sym (&rest args
+					    &aux (shadows ,(shadows-form)))
+			,@(dcl-fcn-parent-form fcn-sym internal-sym)
+			(apply #'(lambda (shadows ,@vars) ,@body)
+				shadows args))
+		     #+lambda
+		     `(defun ,internal-sym (&rest args
+					    &aux (shadows ,(shadows-form)))
+			args
+			,@(dcl-fcn-parent-form fcn-sym internal-sym)
+			(destructuring-bind ,vars args ,@body))
+		     `(defun ,internal-sym ,vars
+			,@(dcl-fcn-parent-form fcn-sym internal-sym)
+			(let ((shadows ,(shadows-form))) ,@body)))
+		 `(defun ,internal-sym ,vars
+		    ,@(dcl-fcn-parent-form fcn-sym internal-sym)
+		    ,@body))
+	    (eval-when (eval) (compile ',internal-sym))
+	    (defobfun-install-macro
+	      ,obj-sym ,fcn-sym ,shadowed-sym ,internal-sym)))))
+
+
+))

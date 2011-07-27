@@ -1,0 +1,33 @@
+;;; -*- Mode:Lisp; Readtable:CL; Package:OBJ; Base:10; Patch-File:T -*-
+;;; Patch file for Object Lisp version 3.3
+;;; Reason:
+;;;  Inhibit undeclared-specials warning during codewalk in obj-listener-loop.
+;;; Written 16-Apr-86 12:29:49 by GLD (Gary L. Drescher) at site LMI Cambridge
+;;; while running on Larry from band 4
+;;; with Don't-dump-a-band! Experimental System 110.187, Experimental Lambda-Diag 7.3, Experimental Local-File 68.5, Experimental FILE-Server 18.3, Experimental Unix-Interface 9.1, Experimental ZMail 65.13, Inconsistent (unreleased patches loaded) Object Lisp 3.2, Experimental Tape 6.37, Experimental Site Data Editor 3.3, Experimental Tiger 24.0, Experimental KERMIT 31.2, Experimental Window-Maker 1.0, Experimental Gateway 4.6, Experimental TCP-Kernel 39.6, Experimental TCP-User 62.7, Experimental TCP-Server 45.5, Experimental MEDIUM-RESOLUTION-COLOR 3.1, Experimental MICRO-COMPILATION-TOOLS 3.2, Experimental illustrate 1.1, microcode 1480, SDU ROM 103.
+
+
+
+; From file DJ: L.OBJECTLISP; OBJ.LISP#154 at 16-Apr-86 12:30:02
+#10R OBJ#:
+(COMPILER-LET ((*PACKAGE* (PKG-FIND-PACKAGE "OBJ")))
+  (COMPILER::PATCH-SOURCE-FILE "SYS: OBJECTLISP; OBJ  "
+
+
+(defun print-apply-compile-read (&optional prompt &aux vals)
+  (setq + (if prompt
+	      (prompt-and-read :expression prompt
+			       (if (global-obj? *object)
+				   "" (if (own? 'obj-name)
+					  (get-sym-val 'obj-name)
+					*object)))
+	      (read)))
+  (if (and (consp +) (memq (car +) '(defobfun defclassvar defclassvars
+				      definstancevar definstancevars defkind)))
+      (setq vals (multiple-value-list (eval +)))
+      (setq vals (multiple-value-list (eval (LET ((*NO-SPECIALS-WARNING T))
+					      (walkover +))))))
+  (setq * (car vals))
+  (mapc #'print vals))
+
+))

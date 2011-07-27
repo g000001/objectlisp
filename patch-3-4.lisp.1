@@ -1,0 +1,56 @@
+;;; -*- Mode:Lisp; Readtable:CL; Package:OBJ; Base:10; Patch-File:T -*-
+;;; Patch file for Object Lisp version 3.4
+;;; Reason:
+;;;  Fixes bug with SPECIALIZATIONS of global object.
+;;; Written 26-Apr-86 12:01:17 by GLD (Gary L. Drescher) at site LMI Cambridge
+;;; while running on Larry from band 4
+;;; with Experimental System 110.228, Experimental Lambda-Diag 7.13, Experimental Local-File 68.7, Experimental FILE-Server 18.4, Experimental Unix-Interface 9.1, Experimental ZMail 65.14, Experimental Object Lisp 3.3, Experimental Tape 6.38, Experimental Site Data Editor 3.3, Experimental Tiger 24.0, Experimental KERMIT 31.3, Experimental Window-Maker 1.1, Experimental Gateway 4.8, Experimental TCP-Kernel 39.7, Experimental TCP-User 62.7, Experimental TCP-Server 45.5, Experimental MEDIUM-RESOLUTION-COLOR 3.4, Experimental MICRO-COMPILATION-TOOLS 3.2, microcode 1508, SDU ROM 103, pace's band, patched to 110.228.
+
+
+
+; From modified file DJ: L.OBJECTLISP; OBJ.LISP#154 at 26-Apr-86 12:01:28
+#10R OBJ#: 
+(COMPILER-LET ((*PACKAGE* (PKG-FIND-PACKAGE "OBJ")))
+  (COMPILER::PATCH-SOURCE-FILE "SYS: OBJECTLISP; OBJ  "
+
+(defun TALKTO (&optional obj)
+  (iff (not (null obj))
+       (set-obj obj)
+    (set-obj obj)
+    nil))
+
+))
+
+; From modified file DJ: L.OBJECTLISP; PRIMS.LISP#14 at 26-Apr-86 12:03:02
+#10R OBJ#: 
+(COMPILER-LET ((*PACKAGE* (PKG-FIND-PACKAGE "OBJ")))
+  (COMPILER::PATCH-SOURCE-FILE "SYS: OBJECTLISP; PRIMS  "
+
+(defun SPECIALIZATIONS (&optional (obj *object))
+  (unless (global-obj? obj)
+    (remq obj (append (copy-list (env-class-objs (own-env obj)))
+		      (copy-list (env-instance-objs (own-env obj)))))))
+
+))
+
+; From modified file DJ: L.OBJECTLISP; GLOBAL.LISP#9 at 26-Apr-86 12:04:05
+#10R OBJ#: 
+(COMPILER-LET ((*PACKAGE* (PKG-FIND-PACKAGE "OBJ")))
+  (COMPILER::PATCH-SOURCE-FILE "SYS: OBJECTLISP; GLOBAL  "
+
+(defobfun print-self (&aux (ptr (if *%pointer?
+				    (%pointer (current-obj))
+				    (obj-index (current-obj)))))
+  (if (AND *objs-print-self? (NOT (GLOBAL-OBJ? (CURRENT-OBJ))))
+      (cond ;((null (current-obj)) (prin1 nil))
+	    ((own? 'class-name)
+	     (format t "#<The class ~a ~o>" class-name ptr))
+	    ((own? 'obj-name)
+	     (if (own? 'class-name)
+		 (format t "#<~a, a ~a ~o>" obj-name class-name ptr)
+		 (format t "#<~a ~o>" obj-name ptr)))
+	    ((there? 'class-name)
+	     (format t "#<An unnamed ~a ~o>" class-name ptr))
+	    (t (format t "#<Object ~o>" ptr)))
+      (format t "#<Object ~a>" ptr)))
+))
