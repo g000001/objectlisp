@@ -434,5 +434,4 @@ probly presumption of compiletime is better.
 
 (defun walk-return-from (tail? forms) tail?
   (let ((fcn (pop forms)) (name (pop forms)) (result (pop forms)))
-    fcn
-    (list* name (walk-form nil result) forms)))
+    (list* fcn name (walk-form nil result) forms)))
