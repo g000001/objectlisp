@@ -11,7 +11,7 @@
 ;;;
 ;;; This software is made available AS IS, and no warranty is made about the
 ;;; software, its performance, or its conformity to any specification.
-;;; 
+;;;
 ;;; Any person obtaining a copy of this software is requested to send her name
 ;;; and post office or electronic mail address to:
 ;;;   ObjectLISP Coordinator
@@ -95,7 +95,7 @@ but if z (init-form) is in the compiler-env, it >can't< be lexical;
  different times.
 
  presumption of compiletime may get global/obj variables at evaltime, bypassing
-  lexical bindings.  this >might< be what's intended tho; would be more 
+  lexical bindings.  this >might< be what's intended tho; would be more
   consistent.
  presumption of evaltime may get global variables at compiletime, bypassing
   compiletime object-bingings.  this is ok if we document it.
@@ -122,8 +122,9 @@ probly presumption of compiletime is better.
     (and . walk-tail) (or . walk-tail) (multiple-value-call . walk-notail)
     (multiple-value-prog1 . walk-notail) (unwind-protect . walk-notail)
     (eval-when . walk-eval-when)  (DELAYED-EXPAND . walk-quote)
+    (tagbody . walk-tagbody)
     #+symbolics (zl:eval-when . walk-eval-when)
-    
+
     ;; Plus some extras (not commonlisp special forms):
     (do . walk-do) (do* . walk-do*)
     (defun . walk-defun) #+symbolics (zl:defun . walk-defun)
@@ -308,7 +309,7 @@ probly presumption of compiletime is better.
 			       (push-local (caddr arg) *bound-vars))))
 			(t arg)))
               args)))
-				
+
 
 (defun walk-do (tail? forms) (walk-let tail? forms t t))
 (defun walk-do* (tail? forms) (walk-let* tail? forms t t))
@@ -389,7 +390,7 @@ probly presumption of compiletime is better.
     (list* 'flet
 	   (mapcar #'(lambda (def)
 		       (iff (and (consp def) (symbolp (car def)))
-			   (push (car def) new-flocals))       
+			   (push (car def) new-flocals))
 		       (iff (and (consp def) (consp (cdr def)))
 			   (walk-definition (car def) (cadr def)
 					    (cddr def))
