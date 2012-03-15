@@ -482,13 +482,13 @@
   (global-sdw-binding link))
 
 (defvar *val-lookup-global-only (microfunction val-lookup-global-only))
-(eval-when (load eval) (setf (symbol-function 'val-lookup-global-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'val-lookup-global-only)
 			     *val-lookup-global-only))
 (defvar *fcn-lookup-global-only (microfunction fcn-lookup-global-only))
-(eval-when (load eval) (setf (symbol-function 'fcn-lookup-global-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'fcn-lookup-global-only)
 			     *fcn-lookup-global-only))
 (defvar *sdw-lookup-global-only (microfunction sdw-lookup-global-only))
-(eval-when (load eval) (setf (symbol-function 'sdw-lookup-global-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'sdw-lookup-global-only)
 			     *sdw-lookup-global-only))
 
 ;WARNING: Redefining these functions will invalidate all extant LINK defstructs,
@@ -514,15 +514,15 @@
 
 (defvar *val-lookup-instance-bound-only
 	(microfunction val-lookup-instance-bound-only))
-(eval-when (load eval) (setf (symbol-function 'val-lookup-instance-bound-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'val-lookup-instance-bound-only)
 			     *val-lookup-instance-bound-only))
 (defvar *fcn-lookup-instance-bound-only
 	(microfunction fcn-lookup-instance-bound-only))
-(eval-when (load eval) (setf (symbol-function 'fcn-lookup-instance-bound-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'fcn-lookup-instance-bound-only)
 			     *fcn-lookup-instance-bound-only))
 (defvar *sdw-lookup-instance-bound-only
 	(microfunction sdw-lookup-instance-bound-only))
-(eval-when (load eval) (setf (symbol-function 'sdw-lookup-instance-bound-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'sdw-lookup-instance-bound-only)
 			     *sdw-lookup-instance-bound-only))
 
 ;WARNING: Redefining these functions will invalidate all extant LINK defstructs,
@@ -546,13 +546,13 @@
   *sdw-class-disp shadows-from-class nil)
 
 (defvar *val-lookup-class-bound-only (microfunction val-lookup-class-bound-only))
-(eval-when (load eval) (setf (symbol-function 'val-lookup-class-bound-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'val-lookup-class-bound-only)
 			     *val-lookup-class-bound-only))
 (defvar *fcn-lookup-class-bound-only (microfunction fcn-lookup-class-bound-only))
-(eval-when (load eval) (setf (symbol-function 'fcn-lookup-class-bound-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'fcn-lookup-class-bound-only)
 			     *fcn-lookup-class-bound-only))
 (defvar *sdw-lookup-class-bound-only (microfunction sdw-lookup-class-bound-only))
-(eval-when (load eval) (setf (symbol-function 'sdw-lookup-class-bound-only)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'sdw-lookup-class-bound-only)
 			     *sdw-lookup-class-bound-only))
 
 ;WARNING: Redefining these functions will invalidate all extant LINK defstructs,
@@ -595,13 +595,13 @@
   *sdw-class-disp shadows-from-envlist-proper shadows-from-class t nil)
 
 (defvar *val-lookup-both-bound (microfunction val-lookup-both-bound))
-(eval-when (load eval) (setf (symbol-function 'val-lookup-both-bound)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'val-lookup-both-bound)
 			     *val-lookup-both-bound))
 (defvar *fcn-lookup-both-bound (microfunction fcn-lookup-both-bound))
-(eval-when (load eval) (setf (symbol-function 'fcn-lookup-both-bound)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'fcn-lookup-both-bound)
 			     *fcn-lookup-both-bound))
 (defvar *sdw-lookup-both-bound (microfunction sdw-lookup-both-bound))
-(eval-when (load eval) (setf (symbol-function 'sdw-lookup-both-bound)
+(eval-when (:load-toplevel :execute) (setf (symbol-function 'sdw-lookup-both-bound)
 			     *sdw-lookup-both-bound))
 
 (defmacro def-adjust-global-val-lookups ()

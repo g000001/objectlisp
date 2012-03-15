@@ -58,8 +58,9 @@
 		      scl:without-interrupts scl:locf scl:location-boundp
 		      scl:ferror scl:string-append scl:error-restart-loop))
 
-
-
+#+sbcl
+(defun %pointer (obj)
+  (sb-kernel:get-lisp-obj-address obj))
 
 ;; patch
 (EVAL-WHEN (:compile-toplevel :load-toplevel :execute)
@@ -249,6 +250,9 @@
 
 ;This gets defined in COMPILE.LISP for lambda/symbolics machines:
 #+(or lambda symbolics)
+(defparameter *obl-compiling? nil)
+
+#-(or lambda symbolics)
 (defparameter *obl-compiling? nil)
 
 #+lambda (defparameter *microcode? nil)
