@@ -27,6 +27,7 @@
   (:USE :CL)
   (:SHADOW :PRINT-OBJECT :CLASS-NAME)
   (:SHADOWING-IMPORT-FROM #+SBCL :SB-CLTL2 #+LISPWORKS :lw #+ALLEGRO :EXCL
+                          #+ECL :EXT
                           :COMPILER-LET)
   (:EXPORT ASK TALKTO KINDOF ONEOF MAKE-OBJ REMAKE-OBJ
            DEFOBFUN &KEY* DEFKIND DEFINE-KIND DEFCLASSVAR
@@ -59,9 +60,9 @@
 		      scl:without-interrupts scl:locf scl:location-boundp
 		      scl:ferror scl:string-append scl:error-restart-loop))
 
-#+sbcl
 (defun %pointer (obj)
-  (sb-kernel:get-lisp-obj-address obj))
+  #+sbcl (sb-kernel:get-lisp-obj-address obj)
+  #+lispworks (system:object-address obj))
 
 ;; patch
 (EVAL-WHEN (:compile-toplevel :load-toplevel :execute)

@@ -12,7 +12,7 @@
                (:FILE "walk"   :DEPENDS-ON ("nloop" "preface" "table"))
                (:FILE "obj"    :DEPENDS-ON ("nloop" "preface" "table" "walk" "obwalk"))
                (:FILE "prims"  :DEPENDS-ON ("nloop" "preface" "table" "walk" "obwalk"))
-               (:FILE "global" :DEPENDS-ON ("nloop" "preface" "table" "walk" "obwalk"))))
+               (:FILE "global" :DEPENDS-ON ("nloop" "preface" "table" "walk" "obwalk" "obj"))))
   
 
 #||

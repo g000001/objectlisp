@@ -35,13 +35,23 @@
      (defvar ,sym)
      (establish-class-var ',sym ,obj (obl ,value))))
 
+#-ecl
 (defmacro DEFCLASSVARS (obj &body vars)
   `(progn
      ,@(nloop (for-in var vars)
 	      (collect (if (symbolp var)
 			   `(defclassvar (,var ,obj) )
 			   `(defclassvar (,(car var) ,obj)
-				         ,(cadr var)))))))
+                                ,(cadr var)))))))
+
+#+ecl
+(defmacro DEFCLASSVARS (obj &body vars)
+  `(progn
+     ,@(loop :for var :in vars
+             :collect (if (symbolp var)
+                          `(defclassvar (,var ,obj) )
+                          `(defclassvar (,(car var) ,obj)
+                               ,(cadr var))))))
 
 (defun establish-class-var (sym obj value)
   (if (record-source-file-name sym 'defclassvar)
@@ -64,13 +74,23 @@
        (defvar ,sym)
        (establish-instance-var ',sym ',key ,obj ,(value-fcn value)))))
 
+#-ecl
 (defmacro DEFINSTANCEVARS (obj &body vars)
   `(progn
      ,@(nloop (for-in var vars)
 	      (collect (if (symbolp var)
 			   `(definstancevar (,var ,obj) )
 			   `(definstancevar
-			      (,(car var) ,obj) ,(cadr var)))))))
+                                (,(car var) ,obj) ,(cadr var)))))))
+
+#+ecl
+(defmacro DEFINSTANCEVARS (obj &body vars)
+  `(progn
+     ,@(loop :for var :in vars
+             :collect (if (symbolp var)
+                          `(definstancevar (,var ,obj) )
+			   `(definstancevar
+                                (,(car var) ,obj) ,(cadr var))))))
 
 ; VAL-FCN is either a function or an atomic form.
 (defun establish-instance-var (sym key obj val-fcn &aux old)

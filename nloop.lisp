@@ -25,7 +25,8 @@
 
 (in-package "OBJ")
 
-#+SBCL (IMPORT 'SB-CLTL2:COMPILER-LET)
+#+:SBCL (IMPORT 'SB-CLTL2:COMPILER-LET)
+#+CCL (IMPORT 'CCL:COMPILER-LET)
 
 (defmacro stickon (thing list list-end)
   `(if (null ,list-end)

@@ -626,12 +626,21 @@
 
 (def-adjust-global-fcn-lookups)
 
+#-:ecl
 (defmacro evalcase (key &body clauses)
   `(let ((key ,key))
      (cond ,@(nloop (for-in clause clauses)
 	       (collect (if (or (eq (car clause) 't) (eq (car clause) 'otherwise))
 			    `(t ,@(cdr clause))
 			    `((eq ,(car clause) key) ,@(cdr clause))))))))
+
+#+:ecl
+(defmacro evalcase (key &body clauses)
+  `(let ((key ,key))
+     (cond ,@(loop :for clause :in clauses
+                   :collect (if (or (eq (car clause) 't) (eq (car clause) 'otherwise))
+                                `(t ,@(cdr clause))
+                                `((eq ,(car clause) key) ,@(cdr clause)))))))
 
 (defun sdw-disp-from-fcn-link (link)
   (evalcase (link-dispatch link)
@@ -1278,7 +1287,8 @@
 	    (*shadowed-fcn-sym shadowed-sym)
 	    (*inside-defobfun t) (*defobfun-obj-sym obj-sym)
 	    *val-ref-syms *val-set-syms *fcn-ref-syms)
-	`(progn 'compile
+	`(;; progn 'compile
+          eval-when (:compile-toplevel :load-toplevel :execute)
 	    (record-source-file-name ',fcn-sym 'defobfun t)
 	    ,(if (or (tree-memq shadowed-sym vars)
 		     (tree-memq shadowed-sym body))
